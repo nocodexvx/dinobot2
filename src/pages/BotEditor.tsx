@@ -7,6 +7,7 @@ import { SkeletonCard } from '../components/SkeletonLoader';
 import Toast from '../components/Toast';
 import PlanModal, { PlanFormData } from '../components/PlanModal';
 import PackageModal, { PackageFormData } from '../components/PackageModal';
+import GroupConfigurationGuide from '../components/GroupConfigurationGuide';
 
 interface Bot {
   id: string;
@@ -708,44 +709,42 @@ export default function BotEditor() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ID VIP:
-                </label>
-                <input
-                  type="text"
-                  value={selectedBot.vip_group_id}
-                  onChange={(e) => setSelectedBot({ ...selectedBot, vip_group_id: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="-1001234567890"
-                />
-              </div>
             </div>
           </div>
 
-          {/* ID REGISTRO */}
+          {/* Configuração de Grupos */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-800 mb-4">ID REGISTRO:</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Configuração de Grupos</h3>
+            <GroupConfigurationGuide
+              botToken={selectedBot.bot_token}
+              botName={selectedBot.bot_name}
+              vipGroupId={selectedBot.vip_group_id}
+              registryGroupId={selectedBot.registry_channel_id}
+              vipGroupLink={selectedBot.vip_group_link}
+              onUpdate={(data) => {
+                setSelectedBot({
+                  ...selectedBot,
+                  vip_group_id: data.vipGroupId,
+                  registry_channel_id: data.registryGroupId,
+                  vip_group_link: data.vipGroupLink
+                });
+              }}
+            />
+          </div>
+
+          {/* Suporte Bot */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-medium text-gray-800 mb-4">Suporte Bot</h3>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Username ou Link do Suporte:
+            </label>
             <input
               type="text"
-              value={selectedBot.registry_channel_id}
-              onChange={(e) => setSelectedBot({ ...selectedBot, registry_channel_id: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 mb-2"
-              placeholder="-1002774372881"
+              value={selectedBot.support_bot_link || ''}
+              onChange={(e) => setSelectedBot({ ...selectedBot, support_bot_link: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="@seusuporte ou https://t.me/seusuporte"
             />
-
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Suporte Bot:
-              </label>
-              <input
-                type="text"
-                value={selectedBot.support_bot_link || ''}
-                onChange={(e) => setSelectedBot({ ...selectedBot, support_bot_link: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Insira o username ou link do seu suporte"
-              />
-            </div>
           </div>
 
           {/* Planos Assinaturas */}
