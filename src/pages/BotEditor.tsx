@@ -760,6 +760,89 @@ export default function BotEditor() {
                       {selectedBot.welcome_message.replace(/\{profile_name\}/g, 'João') || 'Sua mensagem aparecerá aqui...'}
                     </div>
                   </div>
+
+                  {/* Botão Upload de Mídia */}
+                  <div className="mt-3 flex items-center gap-2">
+                    <label className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-sm text-gray-700 font-medium">Adicionar Mídia</span>
+                      <input
+                        type="file"
+                        accept="image/*,video/*,audio/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+
+                          try {
+                            setSaving(true);
+                            setToast({ message: 'Enviando mídia...', type: 'success' });
+
+                            const formData = new FormData();
+                            const fileType = file.type.startsWith('image/') ? 'photo'
+                              : file.type.startsWith('video/') ? 'video'
+                              : 'document';
+
+                            formData.append(fileType, file);
+                            formData.append('chat_id', selectedBot.registry_channel_id);
+                            formData.append('caption', `📤 Mídia enviada: ${file.name}\n🤖 Bot: ${selectedBot.bot_name}\n📅 ${new Date().toLocaleString('pt-BR')}`);
+
+                            const response = await fetch(
+                              `https://api.telegram.org/bot${selectedBot.bot_token}/send${fileType.charAt(0).toUpperCase() + fileType.slice(1)}`,
+                              {
+                                method: 'POST',
+                                body: formData
+                              }
+                            );
+
+                            const data = await response.json();
+
+                            if (!data.ok) {
+                              throw new Error(data.description || 'Erro ao enviar');
+                            }
+
+                            const fileId = data.result.photo?.[data.result.photo.length - 1]?.file_id ||
+                                          data.result.video?.file_id ||
+                                          data.result.document?.file_id;
+
+                            if (fileId) {
+                              await supabase.from('media_gallery').insert({
+                                bot_id: selectedBot.id,
+                                file_id: fileId,
+                                file_type: fileType === 'photo' ? 'image' : fileType,
+                                file_name: file.name,
+                                file_size: file.size,
+                                mime_type: file.type,
+                                context_type: 'welcome_message',
+                                registry_message_id: String(data.result.message_id)
+                              });
+
+                              setSelectedBot({
+                                ...selectedBot,
+                                media_url: fileId,
+                                media_type: fileType === 'photo' ? 'image' : 'video'
+                              });
+
+                              setToast({ message: '✅ Mídia enviada e armazenada com sucesso!', type: 'success' });
+                            }
+                          } catch (err: any) {
+                            console.error('Error uploading media:', err);
+                            setToast({ message: err.message || 'Erro ao enviar mídia', type: 'error' });
+                          } finally {
+                            setSaving(false);
+                          }
+                        }}
+                      />
+                    </label>
+                    {selectedBot.media_url && (
+                      <span className="text-xs text-green-600 flex items-center gap-1">
+                        <Check className="w-4 h-4" />
+                        Mídia anexada
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 

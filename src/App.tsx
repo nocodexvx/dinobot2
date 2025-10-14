@@ -13,6 +13,7 @@ const BotCommands = lazy(() => import('./pages/BotCommands'));
 const BotPayment = lazy(() => import('./pages/BotPayment'));
 const Plans = lazy(() => import('./pages/Plans'));
 const PlanForm = lazy(() => import('./pages/PlanForm'));
+const Remarketing = lazy(() => import('./pages/Remarketing'));
 const Subscriptions = lazy(() => import('./pages/Subscriptions'));
 const Transactions = lazy(() => import('./pages/Transactions'));
 const Statistics = lazy(() => import('./pages/Statistics'));
@@ -49,6 +50,7 @@ function App() {
             <Route path="bots/:botId/plans" element={<Suspense fallback={<LoadingFallback />}><Plans /></Suspense>} />
             <Route path="bots/:botId/plans/create" element={<Suspense fallback={<LoadingFallback />}><PlanForm /></Suspense>} />
             <Route path="bots/:botId/plans/edit/:planId" element={<Suspense fallback={<LoadingFallback />}><PlanForm /></Suspense>} />
+            <Route path="remarketing" element={<Suspense fallback={<LoadingFallback />}><Remarketing /></Suspense>} />
             <Route path="subscriptions" element={<Suspense fallback={<LoadingFallback />}><Subscriptions /></Suspense>} />
             <Route path="transactions" element={<Suspense fallback={<LoadingFallback />}><Transactions /></Suspense>} />
             <Route path="statistics" element={<Suspense fallback={<LoadingFallback />}><Statistics /></Suspense>} />
