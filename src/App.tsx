@@ -17,6 +17,7 @@ const Subscriptions = lazy(() => import('./pages/Subscriptions'));
 const Transactions = lazy(() => import('./pages/Transactions'));
 const Statistics = lazy(() => import('./pages/Statistics'));
 const CronLogs = lazy(() => import('./pages/CronLogs'));
+const Account = lazy(() => import('./pages/Account'));
 
 function LoadingFallback() {
   return (
@@ -53,6 +54,7 @@ function App() {
               <Route path="transactions" element={<Suspense fallback={<LoadingFallback />}><Transactions /></Suspense>} />
               <Route path="statistics" element={<Suspense fallback={<LoadingFallback />}><Statistics /></Suspense>} />
               <Route path="cron-logs" element={<Suspense fallback={<LoadingFallback />}><CronLogs /></Suspense>} />
+              <Route path="account" element={<Suspense fallback={<LoadingFallback />}><Account /></Suspense>} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
