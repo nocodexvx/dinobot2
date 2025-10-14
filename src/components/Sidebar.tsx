@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Bot, CreditCard, Users, BarChart3, Clock, X, Settings } from 'lucide-react';
+import { LayoutDashboard, Bot, CreditCard, Users, BarChart3, Clock, X, Settings, Plus } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -8,7 +8,8 @@ interface SidebarProps {
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Painel' },
-  { to: '/bots', icon: Bot, label: 'Bots' },
+  { to: '/bots', icon: Bot, label: 'Meus Bots' },
+  { to: '/bot-create', icon: Plus, label: 'Criar Bot' },
   { to: '/bot-editor', icon: Settings, label: 'Editar Bot' },
   { to: '/subscriptions', icon: Users, label: 'Assinaturas' },
   { to: '/transactions', icon: CreditCard, label: 'Transações' },
