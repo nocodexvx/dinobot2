@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, Loader, Bot } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useBot } from '../contexts/BotContext';
 
 export default function BotCreate() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { refreshBots, selectBot } = useBot();
   const [loading, setLoading] = useState(false);
   const [validating, setValidating] = useState(false);
   const [botToken, setBotToken] = useState('');
@@ -85,7 +87,9 @@ export default function BotCreate() {
           .eq('id', botId);
       }
 
-      navigate('/bot-editor?botId=' + botId);
+      await refreshBots();
+      selectBot(botId);
+      navigate('/bot-editor');
     } catch (err: any) {
       console.error('Erro ao criar bot:', err);
       setError(err?.message || 'Erro ao criar bot. Tente novamente.');
@@ -98,7 +102,7 @@ export default function BotCreate() {
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
         <button
-          onClick={() => navigate('/bots')}
+          onClick={() => navigate('/')}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
