@@ -8,6 +8,12 @@ import Toast from '../components/Toast';
 import PlanModal, { PlanFormData } from '../components/PlanModal';
 import PackageModal, { PackageFormData } from '../components/PackageModal';
 import GroupConfigurationGuide from '../components/GroupConfigurationGuide';
+import {
+  validateGroupId,
+  validateBotInGroup,
+  sendWelcomeMessageToRegistry,
+  generateVipLink
+} from '../lib/telegram-group-validator';
 
 interface Bot {
   id: string;
@@ -213,6 +219,52 @@ export default function BotEditor() {
     try {
       setSaving(true);
 
+      const vipIdValidation = await validateGroupId(selectedBot.vip_group_id);
+      if (!vipIdValidation.isValid) {
+        setToast({ message: `ID VIP: ${vipIdValidation.error}`, type: 'error' });
+        setSaving(false);
+        return;
+      }
+
+      const registryIdValidation = await validateGroupId(selectedBot.registry_channel_id);
+      if (!registryIdValidation.isValid) {
+        setToast({ message: `ID REGISTRO: ${registryIdValidation.error}`, type: 'error' });
+        setSaving(false);
+        return;
+      }
+
+      if (selectedBot.vip_group_id === selectedBot.registry_channel_id) {
+        setToast({ message: '❌ Os IDs do Grupo VIP e Grupo de Notificação não podem ser iguais', type: 'error' });
+        setSaving(false);
+        return;
+      }
+
+      setToast({ message: 'Validando Grupo VIP...', type: 'success' });
+      const vipValidation = await validateBotInGroup(selectedBot.bot_token, selectedBot.vip_group_id);
+      if (!vipValidation.isValid) {
+        setToast({ message: `Grupo VIP: ${vipValidation.error}`, type: 'error' });
+        setSaving(false);
+        return;
+      }
+
+      setToast({ message: 'Validando Grupo de Notificação...', type: 'success' });
+      const registryValidation = await validateBotInGroup(selectedBot.bot_token, selectedBot.registry_channel_id);
+      if (!registryValidation.isValid) {
+        setToast({ message: `Grupo de Notificação: ${registryValidation.error}`, type: 'error' });
+        setSaving(false);
+        return;
+      }
+
+      setToast({ message: 'Gerando link VIP...', type: 'success' });
+      const linkResult = await generateVipLink(selectedBot.bot_token, selectedBot.vip_group_id);
+      let vipLink = selectedBot.vip_group_link;
+      if (linkResult.link) {
+        vipLink = linkResult.link;
+      }
+
+      setToast({ message: 'Enviando mensagem de boas-vindas...', type: 'success' });
+      await sendWelcomeMessageToRegistry(selectedBot.bot_token, selectedBot.registry_channel_id, selectedBot.bot_name);
+
       const { error } = await supabase
         .from('bots')
         .update({
@@ -221,6 +273,7 @@ export default function BotEditor() {
           media_url: selectedBot.media_url,
           media_type: selectedBot.media_type,
           vip_group_id: selectedBot.vip_group_id,
+          vip_group_link: vipLink,
           registry_channel_id: selectedBot.registry_channel_id,
           support_bot_link: selectedBot.support_bot_link,
           payment_enabled: selectedBot.payment_enabled,
@@ -243,7 +296,8 @@ export default function BotEditor() {
 
       if (error) throw error;
 
-      setToast({ message: 'Alterações salvas com sucesso!', type: 'success' });
+      setSelectedBot({ ...selectedBot, vip_group_link: vipLink });
+      setToast({ message: '✅ Grupos validados e alterações salvas com sucesso!', type: 'success' });
     } catch (err) {
       console.error('Erro ao salvar:', err);
       setToast({ message: 'Erro ao salvar alterações', type: 'error' });
@@ -716,19 +770,10 @@ export default function BotEditor() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Configuração de Grupos</h3>
             <GroupConfigurationGuide
-              botToken={selectedBot.bot_token}
-              botName={selectedBot.bot_name}
               vipGroupId={selectedBot.vip_group_id}
               registryGroupId={selectedBot.registry_channel_id}
-              vipGroupLink={selectedBot.vip_group_link}
-              onUpdate={(data) => {
-                setSelectedBot({
-                  ...selectedBot,
-                  vip_group_id: data.vipGroupId,
-                  registry_channel_id: data.registryGroupId,
-                  vip_group_link: data.vipGroupLink
-                });
-              }}
+              onVipChange={(value) => setSelectedBot({ ...selectedBot, vip_group_id: value })}
+              onRegistryChange={(value) => setSelectedBot({ ...selectedBot, registry_channel_id: value })}
             />
           </div>
 
