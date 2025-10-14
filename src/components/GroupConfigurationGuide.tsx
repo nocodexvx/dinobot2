@@ -51,8 +51,13 @@ export default function GroupConfigurationGuide({
           </div>
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
-            <p className="font-medium mb-1">⚠️ Importante:</p>
-            <p>Certifique-se de que o bot já foi adicionado como administrador no VIP com TODAS as permissões!</p>
+            <p className="font-medium mb-2">⚠️ Permissões Necessárias:</p>
+            <ul className="space-y-1 ml-4 list-none">
+              <li>✅ Adicionar membros</li>
+              <li>✅ Banir/restringir membros</li>
+              <li>✅ Deletar mensagens</li>
+            </ul>
+            <p className="mt-2 text-xs font-medium">Adicione o bot como admin e ative essas 3 permissões no grupo VIP</p>
           </div>
         </div>
       </div>
@@ -78,8 +83,13 @@ export default function GroupConfigurationGuide({
           </div>
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
-            <p className="font-medium mb-1">⚠️ Importante:</p>
-            <p>Certifique-se de que o bot já foi adicionado como administrador no grupo de notificação com TODAS as permissões!</p>
+            <p className="font-medium mb-2">⚠️ Permissões Necessárias:</p>
+            <ul className="space-y-1 ml-4 list-none">
+              <li>✅ Adicionar membros</li>
+              <li>✅ Banir/restringir membros</li>
+              <li>✅ Deletar mensagens</li>
+            </ul>
+            <p className="mt-2 text-xs font-medium">Adicione o bot como admin e ative essas 3 permissões no grupo de notificação</p>
           </div>
         </div>
       </div>

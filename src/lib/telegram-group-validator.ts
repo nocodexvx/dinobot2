@@ -5,6 +5,7 @@ export interface GroupValidationResult {
   hasAllPermissions: boolean;
   groupTitle?: string;
   error?: string;
+  missingPermissions?: string[];
 }
 
 export interface AdminPermissions {
@@ -78,16 +79,25 @@ export async function validateBotInGroup(
     const chatData = await chatResponse.json();
     const groupTitle = chatData.ok ? chatData.result.title : undefined;
 
-    const hasAllPermissions = checkAllPermissions(member);
+    const permissionCheck = checkAllPermissions(member);
 
-    if (!hasAllPermissions) {
+    if (!permissionCheck.valid) {
+      const permissionNames: { [key: string]: string } = {
+        'can_invite_users': 'Adicionar membros',
+        'can_restrict_members': 'Banir/restringir membros',
+        'can_delete_messages': 'Deletar mensagens'
+      };
+
+      const missingNames = permissionCheck.missing.map(p => permissionNames[p] || p);
+
       return {
         isValid: false,
         botPresent: true,
         isAdmin: true,
         hasAllPermissions: false,
         groupTitle,
-        error: '❌ Bot não possui todas as permissões de administrador necessárias. Libere TODAS as permissões de admin'
+        missingPermissions: permissionCheck.missing,
+        error: `❌ Permissões faltando: ${missingNames.join(', ')}. Libere estas permissões nas configurações de admin.`
       };
     }
 
@@ -116,25 +126,35 @@ async function getBotUserId(botToken: string): Promise<number> {
   return data.result.id;
 }
 
-function checkAllPermissions(member: any): boolean {
+function checkAllPermissions(member: any): { valid: boolean; missing: string[] } {
+  console.log('🔍 Verificando permissões do bot:', member);
+
+  if (member.status === 'creator') {
+    console.log('✅ Bot é o criador do grupo - todas as permissões automáticas');
+    return { valid: true, missing: [] };
+  }
+
   const requiredPermissions = [
-    'can_manage_chat',
-    'can_delete_messages',
-    'can_manage_video_chats',
-    'can_restrict_members',
-    'can_promote_members',
-    'can_change_info',
     'can_invite_users',
-    'can_pin_messages'
+    'can_restrict_members',
+    'can_delete_messages'
   ];
+
+  const missingPermissions = [];
 
   for (const permission of requiredPermissions) {
     if (!member[permission]) {
-      return false;
+      missingPermissions.push(permission);
     }
   }
 
-  return true;
+  if (missingPermissions.length > 0) {
+    console.log('❌ Permissões faltando:', missingPermissions);
+    return { valid: false, missing: missingPermissions };
+  }
+
+  console.log('✅ Todas as permissões necessárias estão presentes');
+  return { valid: true, missing: [] };
 }
 
 export async function sendWelcomeMessageToRegistry(
