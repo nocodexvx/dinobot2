@@ -347,56 +347,65 @@ export default function BotEditor() {
 
   const handleSavePlan = async (planData: PlanFormData) => {
     try {
+      const getDurationDays = (durationType: string) => {
+        switch (durationType) {
+          case 'daily': return 1;
+          case 'weekly': return 7;
+          case 'monthly': return 30;
+          case 'lifetime': return null;
+          default: return 30;
+        }
+      };
+
+      const planPayload = {
+        name: planData.name,
+        duration_type: planData.duration_type,
+        duration_days: getDurationDays(planData.duration_type),
+        price: planData.price,
+        order_bump_enabled: planData.order_bump_enabled,
+        order_bump_text: planData.order_bump_text || null,
+        order_bump_accept_text: planData.order_bump_accept_text || null,
+        order_bump_reject_text: planData.order_bump_reject_text || null,
+        order_bump_name: planData.order_bump_name || null,
+        order_bump_value: planData.order_bump_value || null,
+        order_bump_media_url: planData.order_bump_media_url || null,
+        order_bump_audio_url: planData.order_bump_audio_url || null,
+        deliverables: planData.deliverables || null,
+      };
+
       if (planData.id) {
         const { error } = await supabase
           .from('plans')
-          .update({
-            name: planData.name,
-            duration_type: planData.duration_type,
-            price: planData.price,
-            order_bump_enabled: planData.order_bump_enabled,
-            order_bump_text: planData.order_bump_text,
-            order_bump_accept_text: planData.order_bump_accept_text,
-            order_bump_reject_text: planData.order_bump_reject_text,
-            order_bump_name: planData.order_bump_name,
-            order_bump_value: planData.order_bump_value,
-            order_bump_media_url: planData.order_bump_media_url,
-            order_bump_audio_url: planData.order_bump_audio_url,
-            deliverables: planData.deliverables,
-          })
+          .update(planPayload)
           .eq('id', planData.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Erro detalhado ao atualizar plano:', error);
+          throw error;
+        }
         setToast({ message: 'Plano atualizado com sucesso!', type: 'success' });
       } else {
         const { error } = await supabase
           .from('plans')
           .insert({
+            ...planPayload,
             bot_id: selectedBotId,
-            name: planData.name,
-            duration_type: planData.duration_type,
-            price: planData.price,
-            order_bump_enabled: planData.order_bump_enabled,
-            order_bump_text: planData.order_bump_text,
-            order_bump_accept_text: planData.order_bump_accept_text,
-            order_bump_reject_text: planData.order_bump_reject_text,
-            order_bump_name: planData.order_bump_name,
-            order_bump_value: planData.order_bump_value,
-            order_bump_media_url: planData.order_bump_media_url,
-            order_bump_audio_url: planData.order_bump_audio_url,
-            deliverables: planData.deliverables,
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Erro detalhado ao criar plano:', error);
+          throw error;
+        }
         setToast({ message: 'Plano criado com sucesso!', type: 'success' });
       }
 
       setShowPlanModal(false);
       setEditingPlan(null);
       loadBotData(selectedBotId);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erro ao salvar plano:', err);
-      setToast({ message: 'Erro ao salvar plano', type: 'error' });
+      const errorMessage = err?.message || 'Erro desconhecido ao salvar plano';
+      setToast({ message: `Erro: ${errorMessage}`, type: 'error' });
     }
   };
 
